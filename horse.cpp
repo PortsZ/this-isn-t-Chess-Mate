@@ -1,5 +1,5 @@
 #include "horse.h"
-
+#include <QDir>
 #include "piece.h"
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -28,8 +28,8 @@ Horse::Horse(int x, int y) : Piece()
 void Horse::drawPiece(QPainter &painter){
     QBrush blackBrush(Qt::black);
     painter.setBrush(blackBrush);
-    QString docs=QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/imagens/cavalo.png")));
+    QString docs = QDir::currentPath() + "/assets";
+    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/cavalo.png")));
 }
 
 void Horse::drawMoveableArea(QPainter &painter, Board *board){

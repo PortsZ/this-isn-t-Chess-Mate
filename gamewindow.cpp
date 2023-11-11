@@ -7,13 +7,13 @@
 #include <QMessageBox>
 #include <cstdio>
 #include <cstdlib>
+#include <QTimer>
 #include <cstring>
 #include <QStandardPaths>
 #include <QPixmap>
 #include <QMediaPlayer>
-#include <QMultimedia>
-#include <QtMultimediaWidgets>
-#include <windows.h>
+#include <synchapi.h>
+#include <QAudioOutput>
 
 #define OOB 404
 
@@ -21,13 +21,13 @@ GameWindow::GameWindow() : QMainWindow(){
 
     chessBoard = Board::getInstance();
     //---------Window-------------
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    assets.append("/imagens/background.png");
-    QPixmap background(assets);
+    QString assetsPath = QDir::currentPath() + "/assets";
+    assetsPath.append("/background.png");
+    QPixmap background(assetsPath);
     this->setFixedSize(1920,1080);
     background = background.scaled(this->size(),Qt::IgnoreAspectRatio);
     QPalette palette;
-    palette.setBrush(QPalette::Background, background);
+    palette.setBrush(QPalette::Window, background);
     this->setPalette(palette);
     //----------------------------
 
@@ -189,7 +189,7 @@ GameWindow::GameWindow() : QMainWindow(){
     select= new QMediaPlayer(this);
     kageBunshin->setGeometry(1000, 500, 120, 50);
     kageBunshin->setFont(GrindAndDeath_Demo);
-    connect(kageBunshin, SIGNAL (pressed()), this, SLOT(songStart()));
+    connect(kageBunshin, SIGNAL (released()), this, SLOT(songStart()));
 
 
     //-------------------------------------------------------
@@ -200,44 +200,56 @@ void GameWindow::addTower(){
     addTowerClicked=true;
     paintAddableArea=true;
     addTowerButton->setGeometry(1015, 110, 100, 35);
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    select->setMedia(QUrl::fromLocalFile(assets.append("/imagens/select.mp3")));
-    select->setVolume(30);
+    QString assetsPath = QDir::currentPath() + "/assets";
+    QAudioOutput *audioOutput = new QAudioOutput;
+    select->setAudioOutput(audioOutput);
+    select->setSource(QUrl::fromLocalFile(assetsPath.append("/select.mp3")));
+    audioOutput->setVolume(30);
     select->play();
     this->update();
+    select->setPosition(0);
 }
 
 void GameWindow::addBishop(){
     addBishopClicked=true;
     paintAddableArea=true;
     addBishopButton->setGeometry(1015, 210, 100, 35);
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    select->setMedia(QUrl::fromLocalFile(assets.append("/imagens/select.mp3")));
-    select->setVolume(30);
+    QString assetsPath = QDir::currentPath() + "/assets";
+    QAudioOutput *audioOutput = new QAudioOutput;
+    select->setAudioOutput(audioOutput);
+    select->setSource(QUrl::fromLocalFile(assetsPath.append("/select.mp3")));
+    audioOutput->setVolume(30);
     select->play();
     this->update();
+    select->setPosition(0);
 }
 
 void GameWindow::addHorse(){
     addHorseClicked=true;
     paintAddableArea=true;
     addHorseButton->setGeometry(1015, 310, 100, 35);
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    select->setMedia(QUrl::fromLocalFile(assets.append("/imagens/select.mp3")));
-    select->setVolume(30);
+    QString assetsPath = QDir::currentPath() + "/assets";
+    QAudioOutput *audioOutput = new QAudioOutput;
+    select->setAudioOutput(audioOutput);
+    select->setSource(QUrl::fromLocalFile(assetsPath.append("/select.mp3")));
+    audioOutput->setVolume(30);
     select->play();
     this->update();
+    select->setPosition(0);
 }
 
 void GameWindow::addQueen(){
     addQueenClicked=true;
     paintAddableArea=true;
     addQueenButton->setGeometry(1015, 410, 100, 35);
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    select->setMedia(QUrl::fromLocalFile(assets.append("/imagens/select.mp3")));
-    select->setVolume(30);
+    QString assetsPath = QDir::currentPath() + "/assets";
+    QAudioOutput *audioOutput = new QAudioOutput;
+    select->setAudioOutput(audioOutput);
+    select->setSource(QUrl::fromLocalFile(assetsPath.append("/select.mp3")));
+    audioOutput->setVolume(30);
     select->play();
     this->update();
+    select->setPosition(0);
 }
 
 void GameWindow::handleSaveAnimation(){
@@ -248,6 +260,8 @@ void GameWindow::handleSaveAnimation(){
 void GameWindow::paintEvent(QPaintEvent *){
     QPainter painter(this);
     chessBoard->drawMap(painter);
+    this->update(); //sorta works? but, refreshing too much
+
 
     //---------------------------addableArea----------------------
     if(paintAddableArea==true){
@@ -289,7 +303,7 @@ void GameWindow::mousePressEvent(QMouseEvent *event){
     boardPosX = (boardPosX/100)-1;
     boardPosY = (boardPosY/100)-1;
 
-    //------------------------??--------------------------
+    //------------------------ CLEAR area ---------------------
     if((boardPosX==3 or boardPosX==4) and (boardPosY==-1 or boardPosY==-2)){
         chessBoard->pieces.clear();
     }
@@ -398,27 +412,28 @@ void GameWindow::mousePressEvent(QMouseEvent *event){
 
     if(addQueenClicked==true){
 
-        try {
-            if(boardPosX > 7 || boardPosX < 0 || boardPosY > 7 || boardPosY < 0)
-                throw OOB;
-        } catch (int error) {
-            if(error==OOB){
-                QMessageBox err;
-                err.setText("Can't put piece out of the chess board");
-                err.exec();
-                addQueenClicked=false;
-                addQueenButton->setGeometry(1000, 400, 120, 50);
-                return;
-            }
+                try {
+                    if(boardPosX > 7 || boardPosX < 0 || boardPosY > 7 || boardPosY < 0)
+                        throw OOB;
+                } catch (int error) {
+                    if(error==OOB){
+                        QMessageBox err;
+                        addQueenButton->setGeometry(1000, 400, 120, 50);
+                        err.setText("Can't put piece out of the chess board");
+                        err.exec();
+                        addQueenClicked=false;
 
-        }
+                        return;
+                    }
+
+                }
 
 
         if(chessBoard->hasPiece(boardPosX, boardPosY)==false){
             queen = new Queen(boardPosX, boardPosY);
             chessBoard->insertPiece(queen);
-            addQueenClicked=false;
             addQueenButton->setGeometry(1000, 400, 120, 50);
+            addQueenClicked=false;
             this->update();
             boardPosX=8;
             boardPosY=8;
@@ -426,8 +441,8 @@ void GameWindow::mousePressEvent(QMouseEvent *event){
             QMessageBox pecaExistente;
             pecaExistente.setText("already has a piece in here");
             pecaExistente.exec();
-            addQueenClicked=false;
             addQueenButton->setGeometry(1000, 400, 120, 50);
+            addQueenClicked=false;
             return;
         }
     }
@@ -567,33 +582,65 @@ void GameWindow::handleLoadGameButton(){
 }
 
 void GameWindow::songStart(){
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    jutsu->setMedia(QUrl::fromLocalFile(assets.append("/imagens/jutsu.mp3")));
-    jutsu->setVolume(50);
-    jutsu->play();
+    bool isSelected = false;
+
     for(unsigned int k=0;k<chessBoard->pieces.size();k++){
-        if(chessBoard->pieces[k]->getType()==4){
+        if(chessBoard->pieces[k]->getType()==4 && chessBoard->pieces[k]->getSelected()){//if the piece i am looking is a queen AND it is selected
+            QString songPath = QDir::currentPath() + "/assets/jutsu.mp3";
+            QAudioOutput *audioOutput = new QAudioOutput;
+            jutsu->setAudioOutput(audioOutput);
+            jutsu->setSource(QUrl::fromLocalFile(songPath));
+            audioOutput->setVolume(30);
+            jutsu->play();
+            this->update();
+            jutsu->setPosition(0);
             handleKageBunshin();
+            chessBoard->pieces[k]->setSelected(false);
+            isSelected = true;
             break;
         }else{
             continue;
         }
     }
+    if (!isSelected){
+        QMessageBox notSelected;
+        notSelected.setText("no queen selected");
+        notSelected.exec();
+    }
 }
 
-void GameWindow::handleKageBunshin(){
-    Sleep(4550);
+void GameWindow::handleKageBunshin() {
+
+    // Use a QTimer for the delay
+    QTimer::singleShot(4350, this, &GameWindow::createQueens);
+}
+
+void GameWindow::createQueens() {
+
+    // Clear pieces
     chessBoard->pieces.clear();
 
-
-    for(int i=0;i<8;i++){
-        for(int j=0;j<8; j++){
-            queen = new Queen(i, j);
+    // Create queens and update the board
+    for(int i=0; i<8; i++) {
+        for(int j=0; j<8; j++) {
+            Queen *queen = new Queen(i, j);
             chessBoard->insertPiece(queen);
-            this->update();
         }
     }
+    this->update();
 
-
+    // Set another QTimer to clear and add new pieces
+    QTimer::singleShot(400, this, &GameWindow::resetQueens);
 }
 
+void GameWindow::resetQueens() {
+    // Clear the board and add specific pieces
+    chessBoard->pieces.clear();
+    Queen *queen1 = new Queen(3, 4);
+    chessBoard->insertPiece(queen1);
+    Queen *queen2 = new Queen(4, 4);
+    chessBoard->insertPiece(queen2);
+    Queen *queen3 = new Queen(5, 4);
+    chessBoard->insertPiece(queen3);
+    this->update();
+}

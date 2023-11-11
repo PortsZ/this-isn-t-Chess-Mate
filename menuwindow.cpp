@@ -6,8 +6,10 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QString>
-#include <windows.h>
+//#include <windows.h>
 #include <QMediaPlayer>
+#include <QAudioOutput>
+#include <synchapi.h>
 
 MenuWindow::MenuWindow(QWidget *parent) : QMainWindow(parent){
     QFont chesterfield("chesterfield");
@@ -22,12 +24,12 @@ MenuWindow::MenuWindow(QWidget *parent) : QMainWindow(parent){
 
     this->setFixedSize(800, 700);
     //---------Window-------------
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    assets.append("/imagens/background.png");
+    QString assets = QDir::currentPath() + "/assets";
+    assets.append("/background.png");
     QPixmap background(assets);
     background = background.scaled(this->size());
     QPalette palette;
-    palette.setBrush(QPalette::Background, background);
+    palette.setBrush(QPalette::Window, background);
     this->setPalette(palette);
 
     //----------------------------
@@ -86,11 +88,15 @@ void MenuWindow::handleNewGameButton(){
     playOP();
 }
 void MenuWindow::playOP(){
-    QString assets = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    QMediaPlayer *op = new QMediaPlayer(this);
-    op->setMedia(QUrl::fromLocalFile(assets.append("/imagens/op.mp3")));
-    op->setVolume(30);
-    op->play();
+    QString assetsPath = QDir::currentPath() + "/assets";
+    QMediaPlayer *player = new QMediaPlayer;
+    QAudioOutput *audioOutput = new QAudioOutput;
+    player->setAudioOutput(audioOutput);
+    player->setSource(QUrl::fromLocalFile(assetsPath.append("/op.mp3")));
+    audioOutput->setVolume(30);
+    player->play();
+
+
     startGame();
 }
 void MenuWindow::startGame(){
@@ -98,10 +104,3 @@ void MenuWindow::startGame(){
     GameWindow *newGame = new GameWindow;
     newGame->showFullScreen();
 }
-
-
-
-
-
-
-

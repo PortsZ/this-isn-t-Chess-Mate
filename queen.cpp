@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QStandardPaths>
 #include <QString>
+#include <QDir>
 
 //------------Constructors-------------------
 
@@ -27,8 +28,8 @@ Queen::Queen(int x, int y) : Piece()
 void Queen::drawPiece(QPainter &painter){
     QBrush blackBrush(Qt::black);
     painter.setBrush(blackBrush);
-    QString docs=QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/imagens/dama.png")));
+    QString docs = QDir::currentPath() + "/assets";
+    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/dama.png")));
 }
 
 void Queen::drawMoveableArea(QPainter &painter, Board *board){
@@ -190,14 +191,3 @@ bool Queen::movePiece(int x, int y, Board *board){
 
     return  false;
 }
-
-
-
-
-
-
-
-
-
-
-

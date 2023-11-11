@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QStandardPaths>
 #include <QString>
+#include <QDir>
 
 //------------Constructors-------------------
 
@@ -28,12 +29,12 @@ Tower::Tower(int x, int y) : Piece()
 void Tower::drawPiece(QPainter &painter){
     QBrush blackBrush(Qt::black);
     painter.setBrush(blackBrush);
-    QString docs=QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/imagens/torre.png")));
+    QString docs = QDir::currentPath() + "/assets";
+    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/torre.png")));
 }
 
 void Tower::drawMoveableArea(QPainter &painter, Board *board){
-    QBrush brush("#69ff61");
+    QBrush brush("#69ff61"); // i will still use the qcolor string literal
     QBrush brushRed(Qt::red);
     QColor enemycolor = Qt::red;
     enemycolor.setAlphaF(0.7);

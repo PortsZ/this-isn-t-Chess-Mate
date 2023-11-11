@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QStandardPaths>
 #include <QString>
+#include <QDir>
 
 //------------Constructors-------------------
 
@@ -27,8 +28,8 @@ Bishop::Bishop(int x, int y) : Piece()
 void Bishop::drawPiece(QPainter &painter){
     QBrush blackBrush(Qt::black);
     painter.setBrush(blackBrush);
-    QString docs=QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/imagens/bispo.png")));
+    QString docs = QDir::currentPath() + "/assets";
+    painter.drawImage(QRect(100+100*getPosX(), 100+100*getPosY(), 100, 100), QImage(docs.append("/bispo.png")));
 }
 
 void Bishop::drawMoveableArea(QPainter &painter, Board *board){

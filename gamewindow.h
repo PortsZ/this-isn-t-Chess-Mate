@@ -54,6 +54,8 @@ private slots:
     void handleSaveAnimation();
     void handleLoadGameButton();
     void handleKageBunshin();
+    void createQueens();
+    void resetQueens();
     void songStart();
 
 };
